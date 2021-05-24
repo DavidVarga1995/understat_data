@@ -374,6 +374,21 @@ validationShots %>%
 # mean(validationShots$xG - validationShots$pred)
 ```
 
+The graphs below show the correlation between our prediction and Understat's xG. We can see that our model evaluates smaller chances (under 0.2 xG) slightly differently than Understat's model.
+
+```{r}
+validationShots %>%
+  ggplot(., aes(x = xG, y = pred)) + 
+  geom_point() +
+  geom_smooth(method = lm)  # formula = y ~ poly(x, 2)
+
+validationShots %>%
+  mutate(corr = ifelse(xG < 0.2, 1, 2)) %>%
+  ggplot(., aes(x = xG, y = pred, color = factor(corr))) + 
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
 ```{r}
 validationShots %>%
   ggplot(.) + 
