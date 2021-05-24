@@ -1,0 +1,88 @@
+---
+title: "Web Scraper for [understat.com](understat.com)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Setup
+```{r}
+# install.packages("assertive", repos = "http://cran.us.r-project.org")
+library(rvest)
+library(stringr)
+library(jsonlite)
+library(stringi)
+library(stringr)
+library(assertive.base)
+library(dplyr)
+
+toChar <- function(s) {
+  s <- str_replace(s, "\\\\x", "")
+  result <- rawToChar(as.raw(strtoi(s, 16L)))
+  return(result)
+}
+
+replaceBrackets <- function(s) {
+  s <- gsub('h\\":\\{', 'h\\":\\[', s)
+  s <- gsub('\\},\\"a\\":\\{', '\\],\\"a\\":\\[', s)
+  s <- gsub('\\}\\}\\}', '\\}\\]\\}', s)
+  s <- gsub('\\"[0-9]+\\":', '', s)  
+  return(s)
+}
+
+```
+
+Fetching match ids
+```{r}
+fixtures <- read.csv('Bundesliga_fixtures_2019.csv')
+match_ids <- 
+  fixtures %>%
+  dplyr::filter(isResult=="TRUE") %>% 
+  select(id)
+```
+
+Steps:
+1. Uncomment the first loop
+2. Uncomment the first write statement
+3. Run
+4. Comment out the first write statement
+5. Comment out the first loop
+6. Uncomment the second write statement
+7. Uncomment the second loop
+8. Run and wait for the magic to happen
+
+```{r}
+# for (i in match_ids[1:1, ]) {
+for (i in match_ids[2:nrow(match_ids), ]) {
+  url <- paste("https://understat.com/match", i, sep = "/")
+  
+  scripts <- 
+    url %>% 
+    xml2::read_html() %>% 
+    html_nodes("script")
+  
+  stats <- 
+    scripts[2] %>%
+    str_match("('(.*?)')")
+
+  stats <- str_replace_all(stats[3], "\\\\x..", toChar) 
+  stats <- fromJSON(stats)
+  
+  home <- stats[['h']]
+  away <- stats[['a']]
+  match <- rbind(home, away)
+  
+  match_id <- rep(i, nrow(match))
+  match <- data.frame(match_id, match)
+  
+  print(url)
+  # print(match)
+  
+  directory <- paste(getwd(), "Bundesliga_shots_2019.csv", sep="/")
+  
+  # write.csv(match, directory)
+  write.table(match, directory, sep = ",", col.names = !file.exists(directory), append = T)
+}
+```

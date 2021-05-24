@@ -1,0 +1,48 @@
+---
+title: "Web Scraper"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Setup
+```{r}
+# install.packages("assertive", repos = "http://cran.us.r-project.org")
+library(rvest)
+library(stringr)
+library(jsonlite)
+library(stringi)
+library(stringr)
+library(assertive.base)
+
+toChar <- function(s) {
+   s <- str_replace(s, "\\\\x", "")
+   result <- rawToChar(as.raw(strtoi(s, 16L)))
+   return(result)
+}
+```
+
+Fetching script tags
+```{r}
+scripts <- 
+  "https://understat.com/league/La_liga/2019" %>% 
+  xml2::read_html() %>% 
+  html_nodes("script")
+```
+
+```{r}
+games <- 
+  scripts[2] %>%
+  str_match("('(.*?)')")
+
+games <- str_replace_all(games[3], "\\\\x..", toChar) 
+games <- fromJSON(games)
+```
+
+```{r}
+directory <- paste(getwd(), "LaLiga_fixtures_2019.csv", sep="/")
+
+write.csv(games, directory)
+```

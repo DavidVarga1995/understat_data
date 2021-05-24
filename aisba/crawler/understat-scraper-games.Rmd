@@ -1,0 +1,73 @@
+---
+title: "Web Scraper for [understat.com](understat.com)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Setup
+```{r}
+# install.packages("assertive", repos = "http://cran.us.r-project.org")
+library(rvest)
+library(stringr)
+library(jsonlite)
+library(stringi)
+library(stringr)
+library(assertive.base)
+library(dplyr)
+
+toChar <- function(s) {
+  s <- str_replace(s, "\\\\x", "")
+  result <- rawToChar(as.raw(strtoi(s, 16L)))
+  return(result)
+}
+
+replaceBrackets <- function(s) {
+  s <- gsub('h\\":\\{', 'h\\":\\[', s)
+  s <- gsub('\\},\\"a\\":\\{', '\\],\\"a\\":\\[', s)
+  s <- gsub('\\}\\}\\}', '\\}\\]\\}', s)
+  s <- gsub('\\"[0-9]+\\":', '', s)  
+  return(s)
+}
+
+```
+
+Fetching match ids
+```{r}
+fixtures <- read.csv('Bundesliga_fixtures_2019.csv')
+match_ids <- 
+  fixtures %>%
+  dplyr::filter(isResult=="TRUE") %>% 
+  select(id)
+```
+
+```{r}
+# for (i in match_ids[1:1, ]) {
+for (i in match_ids[2:nrow(match_ids), ]) {
+  url <- paste("https://understat.com/match", i, sep = "/")
+  
+  scripts <- 
+    url %>% 
+    xml2::read_html() %>% 
+    html_nodes("script")
+
+  stats <- 
+    scripts[2] %>%
+    str_extract_all("('(.*?)')")
+
+  stats <- str_replace_all(stats[[1]][2], "\\'", "")
+  stats <- parenthesise(stats, "square_brackets")
+  stats <- str_replace_all(stats, "\\\\x..", toChar)
+  stats <- fromJSON(stats)
+  
+  print(url)
+  # print(stats)
+  
+  directory <- paste(getwd(), "Bundesliga_games_2019.csv", sep="/")
+  
+  # write.csv(stats, directory)
+  write.table(stats, directory, sep = ",", col.names = !file.exists(directory), append = T)
+}
+```
