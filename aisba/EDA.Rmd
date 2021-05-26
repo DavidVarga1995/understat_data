@@ -1,0 +1,529 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+# EDA
+
+## Set up the enviroment
+
+```{r}
+url <- "https://github.com/DavidVarga1995/understat_data/archive/refs/heads/main.zip"
+dest <- "./understat_data.zip"
+
+download.file(url, dest)
+unzip(dest)
+```
+
+```{r}
+library(dplyr)
+```
+
+Read the data
+
+```{r}
+epl_shots <- read.csv('./understat_data-main/data/Shots/EPL_shots_2020.csv')
+epl_players <- read.csv('./understat_data-main/data/Players/EPL_players_2020.csv')
+epl_games <- read.csv('./understat_data-main/data/Games/EPL_games_2020.csv')
+epl_fixtures <- read.csv('./understat_data-main/data/Fixtures/EPL_fixtures_2020.csv')
+bundesliga_shots <- read.csv('./understat_data-main/data/Bundesliga_2019/Bundesliga_shots_2019.csv')
+```
+
+Descriptive Statistics
+
+```{r}
+bundesliga_shots_attributes <- select(bundesliga_shots, 'minute', 'h_goals', 'a_goals', 'situation', 'lastAction', 'X', 'Y', 'shotType', 'xG', 'result')
+
+print(summary(bundesliga_shots_attributes))
+```
+
+Summarize factors
+
+```{r}
+table(bundesliga_shots_attributes$situation)
+```
+
+As we can see the most common situation of a shot is open play. The second most common situation of a shot is corner.
+
+The frequency of set pieces and direct freekicks is significant, too.
+
+However the frequency of penalties as a situation of a shot is insignificant.
+
+```{r}
+table(bundesliga_shots_attributes$lastAction)
+```
+
+Obviously the most common action before a shot is a pass. However the frequency of crosses and aerials is significant, too.
+
+The second most common action before a shot is none - resp. the shot is immediately after a ball recovery.
+
+The frequency of standard situations (set pieces), chipped balls, take-ons, rebounds, ball recoveries, head passes, through balls and ball touches is also notable.
+
+The frequency of the remaining values is insignificant.
+
+```{r}
+table(bundesliga_shots_attributes$shotType)
+```
+
+As expected the majority of shots is shot by right or left foot. However the frequency of headers is significant, too.
+
+The remaning shots are shot with other body part.
+
+```{r}
+table(bundesliga_shots_attributes$result)
+```
+
+The result of the shot most frequently is a miss or a blocked shot. However the the amount of saved shots is almost equal with the amount of saved shots.
+
+If a shot is not missed, blocked or saved by the goalkeeper it can be a goal or it can hit the post.
+
+The amount of own goals is insignificant.
+
+```{r}
+table(bundesliga_shots_attributes$result, bundesliga_shots_attributes$shotType)
+```
+
+```{r}
+table(bundesliga_shots_attributes$lastAction, bundesliga_shots_attributes$shotType)
+```
+
+```{r}
+table(bundesliga_shots_attributes$situation, bundesliga_shots_attributes$shotType)
+```
+
+```{r}
+table(bundesliga_shots_attributes$lastAction, bundesliga_shots_attributes$result)
+```
+
+```{r}
+table(bundesliga_shots_attributes$situation, bundesliga_shots_attributes$result)
+```
+
+```{r}
+table(bundesliga_shots_attributes$lastAction, bundesliga_shots_attributes$situation)
+```
+
+```{r}
+print(aggregate(xG ~ shotType, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+print(aggregate(xG ~ situation, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+print(aggregate(xG ~ lastAction, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+print(aggregate(xG ~ result, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+print(aggregate(minute ~ lastAction, data = bundesliga_shots_attributes, summary))
+print(aggregate(minute ~ result, data = bundesliga_shots_attributes, summary))
+print(aggregate(minute ~ situation, data = bundesliga_shots_attributes, summary))
+print(aggregate(minute ~ shotType, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+print(aggregate(X ~ lastAction, data = bundesliga_shots_attributes, summary))
+print(aggregate(X ~ result, data = bundesliga_shots_attributes, summary))
+print(aggregate(X ~ situation, data = bundesliga_shots_attributes, summary))
+print(aggregate(X ~ shotType, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+print(aggregate(Y ~ lastAction, data = bundesliga_shots_attributes, summary))
+print(aggregate(Y ~ result, data = bundesliga_shots_attributes, summary))
+print(aggregate(Y ~ situation, data = bundesliga_shots_attributes, summary))
+print(aggregate(Y ~ shotType, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+print(aggregate(h_goals ~ lastAction, data = bundesliga_shots_attributes, summary))
+print(aggregate(h_goals ~ result, data = bundesliga_shots_attributes, summary))
+print(aggregate(h_goals ~ situation, data = bundesliga_shots_attributes, summary))
+print(aggregate(h_goals ~ shotType, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+print(aggregate(a_goals ~ lastAction, data = bundesliga_shots_attributes, summary))
+print(aggregate(a_goals ~ result, data = bundesliga_shots_attributes, summary))
+print(aggregate(a_goals ~ situation, data = bundesliga_shots_attributes, summary))
+print(aggregate(a_goals ~ shotType, data = bundesliga_shots_attributes, summary))
+```
+
+```{r}
+cat("Variance: ", var(bundesliga_shots_attributes$minute), "\n")
+cat("Standard Deviation: ", sd(bundesliga_shots_attributes$minute), "\n")
+cat("Quantiles: ", quantile(bundesliga_shots_attributes$minute), "\n")
+cat("Range: ", range(bundesliga_shots_attributes$minute), "\n")
+cat("Interquartile Range: ", IQR(bundesliga_shots_attributes$minute))
+```
+
+```{r}
+cat("Variance: ", var(bundesliga_shots_attributes$xG), "\n")
+cat("Standard Deviation: ", sd(bundesliga_shots_attributes$xG), "\n")
+cat("Quantiles: ", quantile(bundesliga_shots_attributes$xG), "\n")
+cat("Range: ", range(bundesliga_shots_attributes$xG), "\n")
+cat("Interquartile Range: ", IQR(bundesliga_shots_attributes$xG))
+```
+
+```{r}
+cat("Variance: ", var(bundesliga_shots_attributes$X), "\n")
+cat("Standard Deviation: ", sd(bundesliga_shots_attributes$X), "\n")
+cat("Quantiles: ", quantile(bundesliga_shots_attributes$X), "\n")
+cat("Range: ", range(bundesliga_shots_attributes$X), "\n")
+cat("Interquartile Range: ", IQR(bundesliga_shots_attributes$X))
+```
+
+```{r}
+cat("Variance: ", var(bundesliga_shots_attributes$Y), "\n")
+cat("Standard Deviation: ", sd(bundesliga_shots_attributes$Y), "\n")
+cat("Quantiles: ", quantile(bundesliga_shots_attributes$Y), "\n")
+cat("Range: ", range(bundesliga_shots_attributes$Y), "\n")
+cat("Interquartile Range: ", IQR(bundesliga_shots_attributes$Y))
+```
+
+```{r}
+cat("Variance: ", var(bundesliga_shots_attributes$h_goals), "\n")
+cat("Standard Deviation: ", sd(bundesliga_shots_attributes$h_goals), "\n")
+cat("Quantiles: ", quantile(bundesliga_shots_attributes$h_goals), "\n")
+cat("Range: ", range(bundesliga_shots_attributes$h_goals), "\n")
+cat("Interquartile Range: ", IQR(bundesliga_shots_attributes$h_goals))
+```
+
+```{r}
+cat("Variance: ", var(bundesliga_shots_attributes$a_goals), "\n")
+cat("Standard Deviation: ", sd(bundesliga_shots_attributes$a_goals), "\n")
+cat("Quantiles: ", quantile(bundesliga_shots_attributes$a_goals), "\n")
+cat("Range: ", range(bundesliga_shots_attributes$a_goals), "\n")
+cat("Interquartile Range: ", IQR(bundesliga_shots_attributes$a_goals))
+```
+
+```{r}
+bundesliga_shots_attributes$situation <- as.factor(bundesliga_shots_attributes$situation)
+bundesliga_shots_attributes$shotType <- as.factor(bundesliga_shots_attributes$shotType)
+bundesliga_shots_attributes$result <- as.factor(bundesliga_shots_attributes$result)
+bundesliga_shots_attributes$lastAction <- as.factor(bundesliga_shots_attributes$lastAction)
+```
+
+```{r}
+str(bundesliga_shots_attributes)
+```
+
+```{r}
+vars <- c('minute', 'h_goals', 'a_goals', 'X', 'Y', 'xG')
+
+round(cor(bundesliga_shots_attributes[, vars], use = "complete.obs"), 2)
+```
+
+```{r}
+library(polycor)
+```
+
+```{r}
+hetcor(bundesliga_shots_attributes)
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(bundesliga_shots_attributes, aes(x = h_goals)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = a_goals)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = situation)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = shotType)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = result)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = minute)) +
+  geom_histogram(bins = nclass.Sturges(bundesliga_shots_attributes$minute))
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X)) +
+  geom_histogram(bins = nclass.Sturges(bundesliga_shots_attributes$X))
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y)) +
+  geom_histogram(bins = nclass.Sturges(bundesliga_shots_attributes$Y))
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = xG)) +
+  geom_histogram(bins = nclass.Sturges(bundesliga_shots_attributes$xG))
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = minute)) +
+  geom_density()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X)) +
+  geom_density()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y)) +
+  geom_density()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = xG)) +
+  geom_density()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = situation, y = minute))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = shotType, y = minute))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = result, y = minute))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = situation, y = xG))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = shotType, y = xG))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = result, y = xG))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = situation, y = X))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = shotType, y = X))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = result, y = X))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = situation, y = Y))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = shotType, y = Y))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, (aes(x = result, y = Y))) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(sample = xG)) + 
+  geom_qq() +
+  geom_qq_line()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(sample = X)) + 
+  geom_qq() +
+  geom_qq_line()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(sample = Y)) + 
+  geom_qq() +
+  geom_qq_line()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(sample = minute)) + 
+  geom_qq() +
+  geom_qq_line()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, y = X)) +
+  geom_point()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, y = xG)) +
+  geom_point()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X, y = xG)) +
+  geom_point()
+```
+
+```{r}
+library(GGally)
+```
+
+```{r}
+vars <- c('minute', 'X', 'Y', 'xG')
+
+ggpairs(bundesliga_shots_attributes[vars])
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, y = X, color = result)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, y = X, color = shotType)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, y = X, color = situation)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, y = xG, color = result)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, y = xG, color = shotType)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, y = xG, color = situation)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X, y = xG, color = result)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X, y = xG, color = situation)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X, y = xG, color = shotType)) +
+  geom_point(size = 3)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = xG, color = result)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = xG, color = shotType)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, color = situation)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, color = result)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = Y, color = shotType)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X, color = result)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X, color = situation)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = X, color = shotType)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = minute, color = result)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = minute, color = shotType)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = minute, color = situation)) +
+  geom_density(size = 2)
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = shotType, fill = result)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = situation, fill = result)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = shotType, fill = situation)) +
+  geom_bar()
+```
+
+```{r}
+ggplot(bundesliga_shots_attributes, aes(x = result, y = situation)) + 
+  geom_tile(alpha = 0.01) 
+```
+
+```{r}
+
+```
+
